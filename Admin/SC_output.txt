@@ -1,0 +1,191 @@
+
+Compiling your contracts...
+===========================
+> Everything is up to date, there is nothing to compile.
+
+
+Starting migrations...
+======================
+> Network name:    'development'
+> Network id:      5777
+> Block gas limit: 1000000000000000 (0x38d7ea4c68000)
+
+
+1_initial_migration.js
+======================
+
+   Replacing 'Migrations'
+   ----------------------
+   > transaction hash:    0x86630eeaaf02934db7cfd03b41114d28f459f05b5306bace78c83566c21d47f5
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x3694d51893627E0b97B4d8B5623Fb77DFA4214bA
+   > block number:        1609
+   > block timestamp:     1691608251
+   > account:             0x2bCbaFB7bF48eB289CA5F26F092B7a0a8123c08E
+   > balance:             99999996.967514536274546474
+   > gas used:            333519 (0x516cf)
+   > gas price:           2.500000008 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000833797502668152 ETH
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:     0.000833797502668152 ETH
+
+
+2_deploy_contracts.js
+=====================
+
+   Replacing 'BN256G2'
+   -------------------
+   > transaction hash:    0x30732c373b2bc00d7cef8dc020ed04d47ce69f97aa385be510c21b1edc442767
+   > Blocks: 0            Seconds: 0
+   > contract address:    0xabb82Bb67cE47E8567DC046B1bc2A4Cc53dFbA3D
+   > block number:        1611
+   > block timestamp:     1691608251
+   > account:             0x2bCbaFB7bF48eB289CA5F26F092B7a0a8123c08E
+   > balance:             99999996.964695438765525362
+   > gas used:            1081704 (0x108168)
+   > gas price:           2.500000008 gwei
+   > value sent:          0 ETH
+   > total cost:          0.002704260008653632 ETH
+
+
+   Replacing 'G'
+   -------------
+   > transaction hash:    0x2c3bb74047e3bd1f42b606711b354a548fb6a5e9adfe0cab7848352440ebe03e
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x625D7e20d8209A3E58B2390a017B50C861A6c727
+   > block number:        1612
+   > block timestamp:     1691608251
+   > account:             0x2bCbaFB7bF48eB289CA5F26F092B7a0a8123c08E
+   > balance:             99999996.964514736264947114
+   > gas used:            72281 (0x11a59)
+   > gas price:           2.500000008 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000180702500578248 ETH
+
+
+   Replacing 'Params'
+   ------------------
+   > transaction hash:    0xee0a35a616373d15fb664a09f4855067c241a899ad2a2040bc55886e4a2a3d87
+   > Blocks: 0            Seconds: 0
+   > contract address:    0xB7a14C1f7e57f1dA0158F6E34D2aEb2bB4885e99
+   > block number:        1613
+   > block timestamp:     1691608251
+   > account:             0x2bCbaFB7bF48eB289CA5F26F092B7a0a8123c08E
+   > balance:             99999996.958586868745977938
+   > gas used:            2371147 (0x242e4b)
+   > gas price:           2.500000008 gwei
+   > value sent:          0 ETH
+   > total cost:          0.005927867518969176 ETH
+
+
+   Linking
+   -------
+   * Contract: Verify <--> Library: G (at address: 0x625D7e20d8209A3E58B2390a017B50C861A6c727)
+
+   Linking
+   -------
+   * Contract: Verify <--> Library: BN256G2 (at address: 0xabb82Bb67cE47E8567DC046B1bc2A4Cc53dFbA3D)
+
+   Replacing 'Verify'
+   ------------------
+   > transaction hash:    0x9970ca875d9ad97c30261b5d23c1071067ac42c93a3f584dd859e41c4c72fba3
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x55aA00ED0b526A69Ff253e79Fb0F76Ae532285f7
+   > block number:        1614
+   > block timestamp:     1691608252
+   > account:             0x5eACBC48faf00362564417bA49FE2863B611F64B
+   > balance:             99999999.078405170616424418
+   > gas used:            4006536 (0x3d2288)
+   > gas price:           2.500000008 gwei
+   > value sent:          0 ETH
+   > total cost:          0.010016340032052288 ETH
+
+
+   Replacing 'Accumulator'
+   -----------------------
+   > transaction hash:    0xc85b0178794b313e3e1592d59fc4e7b128d50d6999f8a84641457e9a512a1a9f
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x58cF1b44ddF56fD3973C47CB99D51045Dc552358
+   > block number:        1615
+   > block timestamp:     1691608252
+   > account:             0x2bCbaFB7bF48eB289CA5F26F092B7a0a8123c08E
+   > balance:             99999996.951581933723562146
+   > gas used:            2801974 (0x2ac136)
+   > gas price:           2.500000008 gwei
+   > value sent:          0 ETH
+   > total cost:          0.007004935022415792 ETH
+
+
+   Linking
+   -------
+   * Contract: Request <--> Library: G (at address: 0x625D7e20d8209A3E58B2390a017B50C861A6c727)
+
+   Linking
+   -------
+   * Contract: Request <--> Library: BN256G2 (at address: 0xabb82Bb67cE47E8567DC046B1bc2A4Cc53dFbA3D)
+
+   Replacing 'Request'
+   -------------------
+   > transaction hash:    0xafef5a0822a49594517d5dbc5dd728ef0a31a3ab04ffa78fb915010a2c6bb3f2
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x45dCBBb56F175dDDFE406bD54c0aB993b12e4456
+   > block number:        1616
+   > block timestamp:     1691608252
+   > account:             0x2bCbaFB7bF48eB289CA5F26F092B7a0a8123c08E
+   > balance:             99999996.940596536188408874
+   > gas used:            4394159 (0x430caf)
+   > gas price:           2.500000008 gwei
+   > value sent:          0 ETH
+   > total cost:          0.010985397535153272 ETH
+
+
+   Replacing 'Issue'
+   -----------------
+   > transaction hash:    0x1cd8282a07aabc008c1fcbefadcf7d30299adfd8a418fd7e014aa1a74d4e9da7
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x7e9Dc02A6cFe20EeC1676DA758e5D23b305326E3
+   > block number:        1617
+   > block timestamp:     1691608252
+   > account:             0x2bCbaFB7bF48eB289CA5F26F092B7a0a8123c08E
+   > balance:             99999996.938734246182449546
+   > gas used:            744916 (0xb5dd4)
+   > gas price:           2.500000008 gwei
+   > value sent:          0 ETH
+   > total cost:          0.001862290005959328 ETH
+
+
+   Replacing 'Opening'
+   -------------------
+   > transaction hash:    0x30feb0c05ccf71bfb5a5bc29c9387c0b65f0d5f383fcda211e4952dfa6a36965
+   > Blocks: 0            Seconds: 0
+   > contract address:    0xEF15E6e591F417320Bb324e817065fF94fcEb688
+   > block number:        1618
+   > block timestamp:     1691608252
+   > account:             0x2bCbaFB7bF48eB289CA5F26F092B7a0a8123c08E
+   > balance:             99999996.936868086176477834
+   > gas used:            746464 (0xb63e0)
+   > gas price:           2.500000008 gwei
+   > value sent:          0 ETH
+   > total cost:          0.001866160005971712 ETH
+
+Open 0xEF15E6e591F417320Bb324e817065fF94fcEb688
+Issue 0x7e9Dc02A6cFe20EeC1676DA758e5D23b305326E3
+Request 0x45dCBBb56F175dDDFE406bD54c0aB993b12e4456
+Params 0xB7a14C1f7e57f1dA0158F6E34D2aEb2bB4885e99
+Verify 0x55aA00ED0b526A69Ff253e79Fb0F76Ae532285f7
+Accu 0x58cF1b44ddF56fD3973C47CB99D51045Dc552358
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:     0.040547952629753448 ETH
+
+Summary
+=======
+> Total deployments:   9
+> Final cost:          0.0413817501324216 ETH
+
+
