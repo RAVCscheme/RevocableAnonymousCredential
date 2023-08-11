@@ -38,26 +38,26 @@ with connection:
         cursor.execute(CREATE_ANON_CRED)
         cursor.execute(CREATE_SERVICES)
 
-root_dir = create_initial_dir(os.getcwd(),"ROOT")
+# root_dir = create_initial_dir(os.getcwd(),"ROOT")
 
 def uploadAddresses(name, address, filename):
     cursor = connection.cursor()
-    file_path = os.path.join(root_dir, filename)
-    f = open(file_path,'wb')
-    pickle.dump(address, f)
+    # file_path = os.path.join(root_dir, filename)
+    # f = open(file_path,'wb')
+    # pickle.dump(address, f)
     text = pickle.dumps(address, 1)
     query = "INSERT INTO contracts(Name, Address) VALUES (%s,%s);"
     f.close()
     cursor.execute(query, (name,psycopg2.Binary(text)))    
 
 
-encoding_type_map = {"1": type("string"), "2": type(1), "3": type(datetime.datetime.now())}
+# encoding_type_map = {"1": type("string"), "2": type(1), "3": type(datetime.datetime.now())}
 
 
-user_dir = create_initial_dir(os.getcwd() +"/ROOT", "USER")
-cer_dir = create_initial_dir(os.getcwd() +"/ROOT", "CERTIFIER")
-user_dir = create_initial_dir(os.getcwd() +"/ROOT", "SERVICES")
-user_dir = create_initial_dir(os.getcwd() +"/ROOT", "ANONYMOUS_CREDENTIALS")
+# user_dir = create_initial_dir(os.getcwd() +"/ROOT", "USER")
+# cer_dir = create_initial_dir(os.getcwd() +"/ROOT", "CERTIFIER")
+# user_dir = create_initial_dir(os.getcwd() +"/ROOT", "SERVICES")
+# user_dir = create_initial_dir(os.getcwd() +"/ROOT", "ANONYMOUS_CREDENTIALS")
 
 # dump_data(os.getcwd() + "/ROOT/encoding_type_map.pickle",encoding_type_map)
 # dump_data(os.getcwd() + "/ROOT/ca_register.pickle",[])
