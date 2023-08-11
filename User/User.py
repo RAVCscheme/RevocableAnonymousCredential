@@ -238,11 +238,13 @@ def update_witness():
     
     a = int(input("Enter serial no. of cred to update witness"))
     name = list(d.keys())[a-1]
+    title = d[name]["title"]
     kr = d[name]["kr"]
     W = d[name]["W"]
     timest = d[name]["timestamp"]
+    delt = d[name]["delta"]
 
-    u.update_witness(W, timest)
+    u.update_witness(W, timest, kr, delt, title)
 
 
 
@@ -629,6 +631,7 @@ class User:
                 id = storage[index]['args']["request_id"]
                 kr = storage[index]['args']["kr"]
                 W =  storage[index]["args"]["W"]
+                delta = storage[index]["args"]["del"]
                 W = ((FQ(W[0]),FQ(W[1])))
                 timestamp_W = int(storage[index]["args"]["timestamp"])
                 print("id")
@@ -637,6 +640,8 @@ class User:
                 print(kr)
                 print("W")
                 print(W)
+                print("delta")
+                print(delta)
                 asd =True
             if asd:
                 break
@@ -652,6 +657,7 @@ class User:
         credential["credential"] = aggr_sig
         credential["kr"] = kr
         credential["W"] = W
+        credential["delta"] = delta
         credential["timestamp"] = timestamp_W
         credential["commit"] = commm
         self.anon_cred_list[title] = credential
@@ -836,13 +842,70 @@ class User:
         finally:
             s.close()
     
-    def update_witness(self,witness, timestamp):
-        (w3,par,r,i,o2,a,v) = self.contracts
-        lists = a.functions.updateWitness(timestamp).transact({'from':self.block_address,'gas': 100000000})
-        print(lists)
+    def update_witness(self,witness, timestamp, kr, delt, title):
+        print(timestamp)
+        (w3,par,r,iss,o2,a,v) = self.contracts
+        lists = a.functions.updateWitness(timestamp).call()
+        wl = sorted(lists[0], key=lambda i: i[3])
+        bl = sorted(lists[1], key=lambda i: i[3])
+        print("wl")
+        print(wl)
+        print("bl")
+        print(bl)
+        merge_list = self.merge(wl,bl)
+        print("merge_list")
+        print(merge_list)
+        tim = lists[2]
+        # delta = (FQ(delt[0]), FQ(delt[1]))
+        for i in merge_list:
+            if(i[0] == 0):
+                continue
+            
+            if(i[3] == 0):
+                delta = (FQ(i[1]),FQ(i[2]))
+                s = multiply(witness, (i[0] -kr) % curve_order)
+                print("ssda")
+                print(s)
+                witness = add(delta, s)
+                print("wit")
+                print(witness)
+            else:
+                delta = (FQ(i[1]),FQ(i[2]))
+                s = add(neg(delta), witness)
+                witness = multiply(s, modInverse((i[0] -kr) % curve_order,curve_order))
+            
+        print("witness")
+        print(witness)
+        self.anon_cred_list[title]["W"] = witness
+        self.anon_cred_list[title]["timestamp"] = tim
+        self.anon_cred_list[title]["delta"] = delta
+        dump_data(os.getcwd() + "/anon_cred.pickle", self.anon_cred_list)
 
+
+
+
+    def merge(self,wl, bl):
+        r = []
+        i = 0
+        j = 0
+        wl_size = len(wl)
+        bl_size = len(bl)
+        while(i < wl_size and j < bl_size):
+            if(wl[i][3] < bl[j][3]):
+                r.append([wl[i][0],wl[i][1],wl[i][2], 0])
+                i+=1
+            else:
+                r.append([bl[j][0],bl[j][1],bl[j][2], 1])
+                j+=1
+        while(i<wl_size):
+            r.append([wl[i][0],wl[i][1],wl[i][2], 0])
+            i+=1
         
-
+        while(j<bl_size):
+            r.append([bl[j][0],bl[j][1],bl[j][2],1])
+            j+=1
+        
+        return r
 
     def __str__(self):
         print("Name of user "+ self.unique_name)

@@ -44204,15 +44204,15 @@
     "5777": {
       "events": {},
       "links": {
-        "G": "0x625D7e20d8209A3E58B2390a017B50C861A6c727",
-        "BN256G2": "0xabb82Bb67cE47E8567DC046B1bc2A4Cc53dFbA3D"
+        "G": "0x635dc561951c68A55a7A9eA0c8b76c8835513280",
+        "BN256G2": "0x6e73f09997f88dc84f2356aFF6a6fd9A117CA405"
       },
-      "address": "0x55aA00ED0b526A69Ff253e79Fb0F76Ae532285f7",
-      "transactionHash": "0x9970ca875d9ad97c30261b5d23c1071067ac42c93a3f584dd859e41c4c72fba3"
+      "address": "0x406CdD305C9e6b15654e7234CF47834f27774903",
+      "transactionHash": "0x44bad0360d42c7bbcc1b2443b1eb5b88f9826c5192c2383fef40fe7b8a7ebb52"
     }
   },
   "schemaVersion": "3.4.13",
-  "updatedAt": "2023-08-09T19:10:52.474Z",
+  "updatedAt": "2023-08-11T04:09:35.782Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

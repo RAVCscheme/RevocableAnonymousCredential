@@ -181,82 +181,13 @@ class Openers:
         self.registry[credential_id][issuing_session_id].setdefault("vcerts", vcerts)
         self.registry[credential_id][issuing_session_id].setdefault("combinations", combinations)
 
-
-    def request_listener(self):
+    def revoke_cred(self):
         (w3,params_contract, request_contract, issue_contract, _,acc_contract) = self.contracts
-        request_filter = request_contract.events.emitRequest.createFilter(fromBlock="0x0", toBlock='latest')
         acc_filter = acc_contract.events.send_self_revocation.createFilter(fromBlock="0x0", toBlock='latest')
-        issue_filter = issue_contract.events.get_ya_shares.createFilter(fromBlock="0x0", toBlock='latest')
-        credential_id = params_contract.functions.getMapCredentials(args.title).call()
         combine_s = acc_contract.events.send_s.createFilter(fromBlock="0x0", toBlock='latest')
         combine_d_e = acc_contract.events.send_d_and_e.createFilter(fromBlock="0x0", toBlock='latest')
-        delta = acc_contract.functions.get_delta().call()
-        delta = (FQ(delta[0]), FQ(delta[1]))
-        print("delta before")
-        print(delta)
-        self.registry.setdefault(credential_id, {})
-        assert credential_id != 0, "No such AC."
         while True:
-            storage_log = request_filter.get_new_entries()
             storage_log_2 = acc_filter.get_new_entries()
-            for i in range(len(storage_log)):
-                delta = acc_contract.functions.get_delta().call()
-                delta = (FQ(delta[0]), FQ(delta[1]))
-                time.sleep(1)
-                current_credential_id = storage_log[i]['args']['id']
-                if current_credential_id != credential_id :
-                    continue
-                sender = storage_log[i]['args']['sender'] #string
-                #kr = get_kr_share(sender,int(args.id))
-			
-                encoded_cm = storage_log[i]['args']['cm']
-                encoded_vcerts = storage_log[i]['args']['vcerts']
-                encoded_commitments = storage_log[i]['args']['commitments']
-                encoded_ciphershares = storage_log[i]['args']['ciphershares']
-                public_m = storage_log[i]['args']['public_m']
-                combination = storage_log[i]['args']['combination']
-                opener_kr_share = storage_log[i]["args"]["opener_shares"]
-                aggr_kr = aggr([int(i) for i in opener_kr_share])
-                print("aggr_kr")
-                print(aggr_kr)
-                kr = int(opener_kr_share[int(args.id)-1])
-                print("kr")
-                print(kr)
-                vcerts = []
-                for i in range(len(encoded_vcerts)):
-                    vcerts.append(((FQ(encoded_vcerts[i][0]), FQ(encoded_vcerts[i][1])), (encoded_vcerts[i][2], encoded_vcerts[i][3])))
-                cm = (FQ(encoded_cm[0]), FQ(encoded_cm[1]))
-                commitments = []
-                for i in range(len(encoded_commitments)):
-                    commitments.append((FQ(encoded_commitments[i][0]), FQ(encoded_commitments[i][1])))
-                ciphershares = []
-                for i in range(len(encoded_ciphershares)):
-                    ciphershares.append(((FQ2([encoded_ciphershares[i][1], encoded_ciphershares[i][0],]), FQ2([encoded_ciphershares[i][3],encoded_ciphershares[i][2],]),), (FQ2([encoded_ciphershares[i][5], encoded_ciphershares[i][4],]), FQ2([encoded_ciphershares[i][7],encoded_ciphershares[i][6],]),)))
-                Lambda = (cm, commitments, ciphershares, public_m, vcerts)
-                self.set_registry(credential_id, sender,cm, ciphershares[int(args.id)-1], public_m, vcerts,kr, combination)
-                asd = False
-                while True:
-                    storage_log = issue_filter.get_new_entries()
-                    for i in range(len(storage_log)):
-                        asd = True
-                        current_credential_id = storage_log[i]['args']['id']
-                        print("current_id")
-                        print(current_credential_id)
-                        if current_credential_id != credential_id :
-                            continue
-                        ans = compute_hash(self.params, cm)
-                        s = int.from_bytes(to_binary256(ans), 'big', signed=False)
-                        self.cred_pr_id = s
-                        # a1 = multiply(delta, (self.accum_sk + kr) % curve_order)
-                        # a1 = (a1[0].n, a1[1].n)
-                        a1 = (self.accum_sk + kr) % curve_order
-                        tx_hash = acc_contract.functions.recieve_ya_share(int(self.id),a1,s).transact({'from': self.address, 'gas': 100000000})
-                        w3.eth.waitForTransactionReceipt(tx_hash)
-                        # delta = acc_contract.functions.get_delta().call()
-                        # print("delta after")
-                        # print(delta)
-                    if asd:
-                        break
             for i in range(len(storage_log_2)):
                 kr = storage_log_2[i]['args']['kr']
                 W = storage_log_2[i]['args']['W']
@@ -267,6 +198,7 @@ class Openers:
                 a_share = storage_log_2[i]['args']['a_share'][int(self.id)-1]
                 b_share = storage_log_2[i]['args']['b_share'][int(self.id)-1]
                 c_share = storage_log_2[i]['args']['c_share'][int(self.id)-1]
+                #t = storage_log_2[i]["args"]["t"]
                 print("G1r")
                 print(G1r)
                 print("a_share")
@@ -275,6 +207,8 @@ class Openers:
                 print(b_share)
                 print("c_share")
                 print(c_share)
+                # print("t")
+                # print(t)
                 delta = acc_contract.functions.get_delta().call()
                 delta = (FQ(delta[0]), FQ(delta[1]))
                 W = (FQ(W[0]), FQ(W[1]))
@@ -292,15 +226,19 @@ class Openers:
                 print(tf)
                 # decrypt ai, bi, ci shares
                 hash = int.from_bytes(to_binary256(multiply(G1r, self.bsk)), "big", signed=False)
+                print("hash")
+                print(hash)
                 ai =  hash^a_share
-                bi =  hash^a_share
-                ci =  hash^a_share
+                bi =  hash^b_share
+                ci =  hash^c_share
+                print(ai)
+                print(bi)
+                print(ci)
                 ri = genRandom()
                 # compute di, ei
                 di = (self.accum_sk + kr - ai)%curve_order
                 ei = (ri - bi) %curve_order
                 #time.sleep(5)
-                
                 
                 # wait for combine event
                 d = None
@@ -367,6 +305,192 @@ class Openers:
                 delta = acc_contract.functions.get_delta().call()
                 print(delta)
                 print("recieve_ya_share_time", et-st)
+
+    def request_listener(self):
+        (w3,params_contract, request_contract, issue_contract, _,acc_contract) = self.contracts
+        request_filter = request_contract.events.emitRequest.createFilter(fromBlock="0x0", toBlock='latest')
+        #acc_filter = acc_contract.events.send_self_revocation.createFilter(fromBlock="0x0", toBlock='latest')
+        issue_filter = issue_contract.events.get_ya_shares.createFilter(fromBlock="0x0", toBlock='latest')
+        credential_id = params_contract.functions.getMapCredentials(args.title).call()
+        #combine_s = acc_contract.events.send_s.createFilter(fromBlock="0x0", toBlock='latest')
+        #combine_d_e = acc_contract.events.send_d_and_e.createFilter(fromBlock="0x0", toBlock='latest')
+        delta = acc_contract.functions.get_delta().call()
+        delta = (FQ(delta[0]), FQ(delta[1]))
+        print("delta before")
+        print(delta)
+        self.registry.setdefault(credential_id, {})
+        assert credential_id != 0, "No such AC."
+        while True:
+            storage_log = request_filter.get_new_entries()
+            #storage_log_2 = acc_filter.get_new_entries()
+            for i in range(len(storage_log)):
+                delta = acc_contract.functions.get_delta().call()
+                delta = (FQ(delta[0]), FQ(delta[1]))
+                time.sleep(1)
+                current_credential_id = storage_log[i]['args']['id']
+                if current_credential_id != credential_id :
+                    continue
+                sender = storage_log[i]['args']['sender'] #string
+                #kr = get_kr_share(sender,int(args.id))
+			
+                encoded_cm = storage_log[i]['args']['cm']
+                encoded_vcerts = storage_log[i]['args']['vcerts']
+                encoded_commitments = storage_log[i]['args']['commitments']
+                encoded_ciphershares = storage_log[i]['args']['ciphershares']
+                public_m = storage_log[i]['args']['public_m']
+                combination = storage_log[i]['args']['combination']
+                opener_kr_share = storage_log[i]["args"]["opener_shares"]
+                aggr_kr = aggr([int(i) for i in opener_kr_share])
+                print("aggr_kr")
+                print(aggr_kr)
+                kr = int(opener_kr_share[int(args.id)-1])
+                print("kr")
+                print(kr)
+                vcerts = []
+                for i in range(len(encoded_vcerts)):
+                    vcerts.append(((FQ(encoded_vcerts[i][0]), FQ(encoded_vcerts[i][1])), (encoded_vcerts[i][2], encoded_vcerts[i][3])))
+                cm = (FQ(encoded_cm[0]), FQ(encoded_cm[1]))
+                commitments = []
+                for i in range(len(encoded_commitments)):
+                    commitments.append((FQ(encoded_commitments[i][0]), FQ(encoded_commitments[i][1])))
+                ciphershares = []
+                for i in range(len(encoded_ciphershares)):
+                    ciphershares.append(((FQ2([encoded_ciphershares[i][1], encoded_ciphershares[i][0],]), FQ2([encoded_ciphershares[i][3],encoded_ciphershares[i][2],]),), (FQ2([encoded_ciphershares[i][5], encoded_ciphershares[i][4],]), FQ2([encoded_ciphershares[i][7],encoded_ciphershares[i][6],]),)))
+                Lambda = (cm, commitments, ciphershares, public_m, vcerts)
+                self.set_registry(credential_id, sender,cm, ciphershares[int(args.id)-1], public_m, vcerts,kr, combination)
+                asd = False
+                while True:
+                    storage_log = issue_filter.get_new_entries()
+                    for i in range(len(storage_log)):
+                        asd = True
+                        current_credential_id = storage_log[i]['args']['id']
+                        print("current_id")
+                        print(current_credential_id)
+                        if current_credential_id != credential_id :
+                            continue
+                        ans = compute_hash(self.params, cm)
+                        s = int.from_bytes(to_binary256(ans), 'big', signed=False)
+                        self.cred_pr_id = s
+                        # a1 = multiply(delta, (self.accum_sk + kr) % curve_order)
+                        # a1 = (a1[0].n, a1[1].n)
+                        a1 = (self.accum_sk + kr) % curve_order
+                        tx_hash = acc_contract.functions.recieve_ya_share(int(self.id),a1,s).transact({'from': self.address, 'gas': 100000000})
+                        w3.eth.waitForTransactionReceipt(tx_hash)
+                        # delta = acc_contract.functions.get_delta().call()
+                        # print("delta after")
+                        # print(delta)
+                    if asd:
+                        break
+            # for i in range(len(storage_log_2)):
+            #     kr = storage_log_2[i]['args']['kr']
+            #     W = storage_log_2[i]['args']['W']
+            #     H = storage_log_2[i]['args']['H']
+            #     S = storage_log_2[i]['args']['S']
+            #     cm = storage_log_2[i]['args']['cm']
+            #     G1r = storage_log_2[i]['args']['g1_r']
+            #     a_share = storage_log_2[i]['args']['a_share'][int(self.id)-1]
+            #     b_share = storage_log_2[i]['args']['b_share'][int(self.id)-1]
+            #     c_share = storage_log_2[i]['args']['c_share'][int(self.id)-1]
+            #     print("G1r")
+            #     print(G1r)
+            #     print("a_share")
+            #     print(a_share)
+            #     print("b_share")
+            #     print(b_share)
+            #     print("c_share")
+            #     print(c_share)
+            #     delta = acc_contract.functions.get_delta().call()
+            #     delta = (FQ(delta[0]), FQ(delta[1]))
+            #     W = (FQ(W[0]), FQ(W[1]))
+            #     H = (FQ(H[0]), FQ(H[1]))
+            #     S = (FQ(S[0]), FQ(S[1]))
+            #     G1r = (FQ(G1r[0]), FQ(G1r[1]))
+            #     acm = []
+            #     for i in cm:
+            #         acm.append((FQ(i[0]), FQ(i[1])))
+            #     st = time.time()
+            #     tf = VerifyRevokeCred(kr,W,H,S,acm, delta, self.aggr_accum,self.aggr_vk)
+            #     et = time.time()
+            #     print("kr_verify_time", et-st)
+            #     print("tf")
+            #     print(tf)
+            #     # decrypt ai, bi, ci shares
+            #     hash = int.from_bytes(to_binary256(multiply(G1r, self.bsk)), "big", signed=False)
+            #     ai =  hash^a_share
+            #     bi =  hash^a_share
+            #     ci =  hash^a_share
+            #     ri = genRandom()
+            #     # compute di, ei
+            #     di = (self.accum_sk + kr - ai)%curve_order
+            #     ei = (ri - bi) %curve_order
+            #     #time.sleep(5)
+                
+                
+            #     # wait for combine event
+            #     d = None
+            #     e = None
+            #     asd = False
+            #     flag = True
+            #     while True:
+            #         logg = combine_d_e.get_new_entries()
+            #         # recieve d, e
+                    
+            #         for i in range(len(logg)):
+            #             asd = True
+            #             d = int(logg[i]["args"]["d"])
+            #             e = int(logg[i]["args"]["e"])
+            #         if asd:
+            #             break
+
+            #         if flag:
+            #             tx_hash = acc_contract.functions.combine_di_and_ei(di,ei,int(self.id)).transact({'from': self.address, 'gas': 100000000})
+            #             w3.eth.waitForTransactionReceipt(tx_hash)
+            #             flag = False
+                    
+            #     print("d")
+            #     print(d)
+            #     print("e")
+            #     print(e)
+            #     # compute si
+            #     si = ((d*bi)%curve_order + (e*ai)%curve_order + ci + (d*e) %curve_order)%curve_order
+                
+                
+            #     s = None
+            #     asd = False
+            #     flag = True
+            #     while True:
+            #         # wait for combine event
+            #         logg = combine_s.get_new_entries()
+                    
+            #         for i in range(len(logg)):
+            #             asd = True
+            #             # recieve s
+            #             s = int(logg[i]["args"]["s"])
+            #         if asd:
+            #             break
+            #         if flag:
+            #             tx_hash = acc_contract.functions.combine_func_si(si,int(self.id)).transact({'from': self.address, 'gas': 100000000})
+            #             w3.eth.waitForTransactionReceipt(tx_hash)
+            #             flag = False
+            #     print("s")
+            #     print(s)
+            #     pi = (modInverse(s,curve_order) * ri)%curve_order
+            #     # delta = acc_contract.functions.get_delta().call()
+            #     # delta = (FQ(delta[0]), FQ(delta[1]))
+            #     # pi = multiply(delta, pi)
+            #     # pi = (pi[0].n,pi[1].n)
+            #     # # compute s^-1*r and then delta^pi
+            #     # print("pi")
+            #     # print(pi)
+            #     # ans = compute_hash(self.params, cm)
+            #     # req_id = s = int.from_bytes(to_binary256(ans), 'big', signed=False)
+            #     st = time.time()
+            #     tx_hash = acc_contract.functions.recieve_share_for_revocation(int(self.id),pi,self.cred_pr_id).transact({'from': self.address, 'gas': 100000000})
+            #     w3.eth.waitForTransactionReceipt(tx_hash)
+            #     et = time.time()
+            #     delta = acc_contract.functions.get_delta().call()
+            #     print(delta)
+            #     print("recieve_ya_share_time", et-st)
             #print("fgh")
             time.sleep(5)
     
@@ -487,6 +611,8 @@ b = Openers(args.title, args.id, args.ip, args.port, args.address, args.rpc_endp
 b.setup_opener()
 listen_thread  = threading.Thread(target = b.request_listener)
 listen_thread.start()
+revoke_thread  = threading.Thread(target = b.revoke_cred)
+revoke_thread.start()
 opening_thread  = threading.Thread(target = b.opening_thread)
 opening_thread.start()
 

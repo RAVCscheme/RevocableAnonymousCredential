@@ -8750,12 +8750,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x7e9Dc02A6cFe20EeC1676DA758e5D23b305326E3",
-      "transactionHash": "0x1cd8282a07aabc008c1fcbefadcf7d30299adfd8a418fd7e014aa1a74d4e9da7"
+      "address": "0x571B9Fe9618ce17fD11d96230B179509E085C6d0",
+      "transactionHash": "0x6c79b1ff428baec1a97b531f43a2e9ecfd4e19baa3b714e32ac02ae534e40429"
     }
   },
   "schemaVersion": "3.4.13",
-  "updatedAt": "2023-08-09T19:10:52.487Z",
+  "updatedAt": "2023-08-11T04:09:35.815Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

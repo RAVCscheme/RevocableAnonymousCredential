@@ -13,3 +13,7 @@ python3 Opener.py --title "Loan_Credential" --id 1 --ip 127.0.0.1 --port 8001 --
 python3 Opener.py --title "Loan_Credential" --id 2 --ip 127.0.0.1 --port 8002 --address $(grep "opener2=" addresses.txt | cut -d "=" -f 2) --rpc-endpoint "http://127.0.0.1:7547"
 python3 Opener.py --title "Loan_Credential" --id 3 --ip 127.0.0.1 --port 8003 --address $(grep "opener3=" addresses.txt | cut -d "=" -f 2) --rpc-endpoint "http://127.0.0.1:7547"
 
+python3 User.py --unique-name user1 --address $(grep "user1=" addresses.txt | cut -d "=" -f 2) --rpc-endpoint "http://127.0.0.1:7547" < User_input.txt
+python3 User.py --unique-name user2 --address $(grep "user2=" addresses.txt | cut -d "=" -f 2) --rpc-endpoint "http://127.0.0.1:7547" < User_input.txt
+
+python3 Service_provider.py --title "Loan_Service" --name Bank --address $(grep "SP=" addresses.txt | cut -d "=" -f 2) --rpc-endpoint "http://127.0.0.1:7547" --accepts "Loan_Credential" --ip "127.0.0.1" --port "9000"

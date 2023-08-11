@@ -21,14 +21,16 @@ contract Accumulator{
     uint256[] private combine_si;
     mapping(uint256 => uint256) private id_kr;
     mapping(uint256 => uint256) private flag;
-    uint256[2][] whitelist;
-    uint256[2][] blacklist;
+    uint256[4][] whitelist;
+    uint256[4][] blacklist;
     uint256[] a_poly;
     uint256[] b_poly;
     uint256[] c_poly;
     uint256[] a_share;
     uint256[] b_share;
     uint256[] c_share;
+    uint256[4][] wl;
+    uint256[4][] bl;
     constructor(Params _params) {
         owner = msg.sender;
         params = _params;  
@@ -39,7 +41,7 @@ contract Accumulator{
         _;
     }
     
-    event send_W_kr(uint256[2] W, uint256 request_id, uint256 kr, uint256 timestamp);
+    event send_W_kr(uint256[2] W,uint256[2] del, uint256 request_id, uint256 kr, uint256 timestamp);
     //event send_W_kr(uint256[2] W,G.G1Point delta, uint256 request_id);
     event revocation_complete(uint256 c);
     event send_d_and_e(uint256 d, uint256 e);
@@ -131,7 +133,7 @@ contract Accumulator{
         return (delta.X, delta.Y);
     }
     function recieve_share_for_revocation(uint id, uint256 share, uint256 request_id) public {
-        if(flag[request_id] == 2) return;
+        //if(flag[request_id] == 2) return;
 
         delta_shares[id-1]= share;
         uint count = 0;
@@ -139,23 +141,23 @@ contract Accumulator{
         {
             if(delta_shares[i-1] != 0) count++;
         }
-        if(count==to){
+        if(count==no){
             delta = G.g1mul(delta, aggregate_value(5));       
             for (uint i=1; i<=no; i++) 
             {
                delta_shares[i-1] = 0;
             }
 
-            blacklist.push([id_kr[request_id],block.timestamp]);
-            flag[request_id] = 2;
+            blacklist.push([id_kr[request_id],block.timestamp, delta.X, delta.Y]);
+            //flag[request_id] = 2;
             emit revocation_complete(1);
             //emit send_W_kr(W,request_id,id_kr[request_id], block.timestamp);
         }
     }
 
     function aggregate_value(uint256 fl) view public returns(uint256){
-            uint256 [] memory indexes = new uint[](to);
-            uint256[] memory filter = new uint[](to);
+            uint256 [] memory indexes = new uint[](no);
+            uint256[] memory filter = new uint[](no);
             uint256[] memory combine;
             if(fl == 1) combine= combine_di;
             else if(fl == 2) combine = combine_ei;
@@ -186,7 +188,7 @@ contract Accumulator{
             {
                 if(combine_di[i-1] != 0) count++;
             }
-            if(count==to){
+            if(count==no){
                 uint256 d = aggregate_value(1);
                 uint256 e = aggregate_value(2);
 
@@ -205,7 +207,7 @@ contract Accumulator{
             {
                 if(combine_si[i-1] != 0) count++;
             }
-            if(count==to){
+            if(count==no){
                 uint256 s = aggregate_value(3);
 
                 for (uint i=1; i<=no; i++) 
@@ -234,8 +236,9 @@ contract Accumulator{
         for(uint i=1; i<=no; i++){
             y_r[i-1] = G.g1mul(pub_key[i-1], r);
         }
+        uint256 t;
         for(uint i=1; i<=no; i++){
-            uint256 t = hash_to_int_2(y_r[i-1]);
+            t = hash_to_int_2(y_r[i-1]);
             uint256 a1 = gen_share(a_poly,i);
             uint256 b1 = gen_share(b_poly,i);
             uint256 c1 = gen_share(c_poly,i);
@@ -324,7 +327,7 @@ contract Accumulator{
     }
 
     function recieve_ya_share(uint id, uint256 share, uint256 request_id) public {
-        if(flag[request_id] == 1) return;
+        //if(flag[request_id] == 1) return;
 
         accumulator_key_shares[id-1]= share;
         uint count = 0;
@@ -332,7 +335,7 @@ contract Accumulator{
         {
             if(accumulator_key_shares[i] != 0) count++;
         }
-        if(count==to){
+        if(count==no){
             uint256[2] memory W = [delta.X,delta.Y];
 
             delta = G.g1mul(delta,aggregate_value(4));       
@@ -340,31 +343,45 @@ contract Accumulator{
             {
                accumulator_key_shares[i-1] = 0;
             }
-
-            whitelist.push([id_kr[request_id],block.timestamp]);
-            flag[request_id] = 1;
-            emit send_W_kr(W,request_id,id_kr[request_id], block.timestamp);
+            uint256[2] memory del = [delta.X,delta.Y];
+            whitelist.push([id_kr[request_id],block.timestamp, W[0],W[1]]);
+            //flag[request_id] = 1;
+            emit send_W_kr(W,del,request_id,id_kr[request_id], block.timestamp);
             //emit send_W_kr(W_m,delta,request_id);
         }
         
     }
 
-    function updateWitness(uint256 time) public view returns (uint256[] memory, uint256[] memory, uint256 ){
-            uint256[] memory w1 = new uint256[](whitelist.length);
-            uint256[] memory b1 = new uint256[](blacklist.length);
-            uint c = 0;
-            for(uint i = whitelist.length-1; i>=0;i--){
-                if(whitelist[i][1] < time) break;
-                w1[c] = whitelist[i][0];
-                c++;
+    function updateWitness(uint256 time) public returns (uint256[4][] memory, uint256[4][] memory, uint256){
+            uint256 wl_size = whitelist.length;
+            uint256 bl_size = blacklist.length;
+            wl = new uint256[3][](wl_size);
+            bl = new uint256[3][](bl_size);
+            uint256 c = 0;
+            
+            if(wl_size > 0){
+                for(uint i = wl_size; i>0;i--){
+                    if(whitelist[i-1][1] <= time) break;
+                    wl[c][0] = whitelist[i-1][0];
+                    wl[c][1] = whitelist[i-1][2];
+                    wl[c][2] = whitelist[i-1][3];
+                    wl[c][3] = whitelist[i-1][1];
+                    c++;
+                }
             }
             c = 0;
-            for(uint i = blacklist.length-1; i>=0;i--){
-                if(blacklist[i][1] < time) break;
-                b1[c] = blacklist[i][0];
-                c++;
+            if(bl_size > 0){
+                for(uint i = bl_size; i>0;i--){
+                    if(blacklist[i-1][1] <= time) break;
+                    bl[c][0] = blacklist[i-1][0];
+                    bl[c][1] = blacklist[i-1][2];
+                    bl[c][2] = blacklist[i-1][3];
+                    bl[c][3] = blacklist[i-1][1];
+                    c++;
+                }
             }
-            return (w1,b1, block.timestamp);
+            //return (whitelist, blacklist, time);
+            return (wl,bl,block.timestamp);
     }
     function set_accumulator(uint _no,uint _to,uint _nv,uint _tv) public {
         delta = G.P1();
