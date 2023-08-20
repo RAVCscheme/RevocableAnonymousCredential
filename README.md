@@ -36,5 +36,3 @@ Income (Integer)
 Income greater than 20000 (String "Y" or "N")
 
 Anonymous Credential will have the following attributes
-
-

@@ -19,8 +19,8 @@ contract Accumulator{
     uint256[] private combine_di;
     uint256[] private combine_ei;
     uint256[] private combine_si;
+    uint256[] private combine_kr;
     mapping(uint256 => uint256) private id_kr;
-    mapping(uint256 => uint256) private flag;
     uint256[4][] whitelist;
     uint256[4][] blacklist;
     uint256[] a_poly;
@@ -46,6 +46,7 @@ contract Accumulator{
     event revocation_complete(uint256 c);
     event send_d_and_e(uint256 d, uint256 e);
     event send_s(uint256 s);
+    event send_kr(uint256 kr);
     event send_updated_witness(G.G1Point delta);
     event send_self_revocation(uint256 kr, uint256[] W,uint256[] H,uint256[] S, uint256[2][] cm, uint256[] g1_r, uint256[] a_share, uint256[] b_share, uint256[] c_share);
 
@@ -142,7 +143,7 @@ contract Accumulator{
             if(delta_shares[i-1] != 0) count++;
         }
         if(count==no){
-            delta = G.g1mul(delta, aggregate_value(5));       
+            delta = G.g1mul(delta, aggregate_value(6));       
             for (uint i=1; i<=no; i++) 
             {
                delta_shares[i-1] = 0;
@@ -163,6 +164,7 @@ contract Accumulator{
             else if(fl == 2) combine = combine_ei;
             else if(fl == 3) combine = combine_si;
             else if(fl == 4) combine = accumulator_key_shares;
+            else if(fl == 5) combine = combine_kr;
             else combine = delta_shares;
             uint u = 0;
             for (uint i=1; i<=no; i++) 
@@ -215,6 +217,23 @@ contract Accumulator{
                     combine_si[i-1] = 0;
                 }
                 emit send_s(s);
+            }
+    }
+    function combine_func_kr(uint256 kr, uint256 id) public{
+            combine_kr[id-1] = kr;
+            uint count = 0;
+            for (uint i=1; i<=no; i++)
+            {
+                if(combine_kr[i-1] != 0) count++;
+            }
+            if(count==no){
+                uint256 s = aggregate_value(5);
+
+                for (uint i=1; i<=no; i++) 
+                {
+                    combine_kr[i-1] = 0;
+                }
+                emit send_kr(s);
             }
     }
     function gen_beaver_tuples(G.G1Point[] memory pub_key) public returns (G.G1Point memory){
@@ -398,6 +417,7 @@ contract Accumulator{
         combine_di = new uint256[](no);
         combine_ei = new uint256[](no);
         combine_si = new uint256[](no);
+        combine_kr = new uint256[](no);
         accumulator_key_shares = new uint256[](no);
         delta_shares = new uint256[](no);
         for (uint i=1; i<=no; i++) 
@@ -405,6 +425,7 @@ contract Accumulator{
             accumulator_key_shares[i-1] = 0;
             delta_shares[i-1] = 0;
             combine_di[i-1] = 0;combine_ei[i-1] = 0;combine_si[i-1] = 0;
+            combine_kr[i-1] = 0;
         }
     }
 

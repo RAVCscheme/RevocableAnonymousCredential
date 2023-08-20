@@ -258,14 +258,6 @@ class AttributeCertfier:
         print(json_pk)
         register = { "name" : self.name, "title":self.title,"req_ip" : self.req_ip, "req_port":self.req_port, "open_ip" : self.open_ip, "open_port":self.open_port, "dependency": self.dependency,"params": json_param, "pk": json_pk, "schema": json_schema}
         post_data(self.connection, register, "certifiers")
-        #register = { "title":self.title, "name" : self.name, "req-ip" : self.req_ip, "req-port":self.req_port, "open-ip" : self.open_ip, "open-port":self.open_port, "dependency": self.dependency, "path": self.path}
-
-        # if RegisterList != None:
-        #     RegisterList.append(register)
-        #     dump_data(os.getcwd() + "/ROOT/ca_register.pickle",RegisterList)
-        # else:
-        #     dump_data(os.getcwd() + "/ROOT/ca_register.pickle",[register])
-
             
 
     def __str__(self):

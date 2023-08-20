@@ -47,7 +47,7 @@ class Cred:
             return connection
         
     def init_ac(self, schema,inc_ind, q,nv,no,tv,to,params,pp_params,vk,opk,bpk,vk_a,aggr_vk,aggr_vk_a, valid, opener):
-        RegisteredList = load_data(os.getcwd() + "/ROOT/ac_register.pickle")
+        #RegisteredList = load_data(os.getcwd() + "/ROOT/ac_register.pickle")
         y = [nv,no,tv,to]
         print("here")
         print(self.title)
@@ -138,20 +138,20 @@ class Cred:
             ca_indexes.append(0)
             include_indexes.setdefault(certifier, ca_indexes)
 
-        while True:
-            checker = input("Do u want to add the public attribute to "+self.title + " : ")
-            if checker == "Y" or checker == "y":
-                key = input("Enter the name of the attribute : ")
-                value = input("Choose the type of the attribute string - 1, number - 2, or datetime - 3: ")
-                if(value == 1):
-                    value = "str"
-                elif(value == 2):
-                    value = "int"
-                elif(value == 3):
-                    value = "date"
-                schema.setdefault(key, {"type" : value, "visibility": "public"})
-            else:
-                break
+        # while True:
+        #     checker = input("Do u want to add the public attribute to "+self.title + " : ")
+        #     if checker == "Y" or checker == "y":
+        #         key = input("Enter the name of the attribute : ")
+        #         value = input("Choose the type of the attribute string - 1, number - 2, or datetime - 3: ")
+        #         if(value == 1):
+        #             value = "str"
+        #         elif(value == 2):
+        #             value = "int"
+        #         elif(value == 3):
+        #             value = "date"
+        #         schema.setdefault(key, {"type" : value, "visibility": "public"})
+        #     else:
+        #         break
        
         self.q = len(schema)
         print("q")

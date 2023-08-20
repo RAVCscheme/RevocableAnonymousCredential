@@ -47,7 +47,6 @@ def uploadAddresses(name, address, filename):
     # pickle.dump(address, f)
     text = pickle.dumps(address, 1)
     query = "INSERT INTO contracts(Name, Address) VALUES (%s,%s);"
-    f.close()
     cursor.execute(query, (name,psycopg2.Binary(text)))    
 
 

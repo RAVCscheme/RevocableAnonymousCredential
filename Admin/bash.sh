@@ -17,3 +17,5 @@ python3 User.py --unique-name user1 --address $(grep "user1=" addresses.txt | cu
 python3 User.py --unique-name user2 --address $(grep "user2=" addresses.txt | cut -d "=" -f 2) --rpc-endpoint "http://127.0.0.1:7547" < User_input.txt
 
 python3 Service_provider.py --title "Loan_Service" --name Bank --address $(grep "SP=" addresses.txt | cut -d "=" -f 2) --rpc-endpoint "http://127.0.0.1:7547" --accepts "Loan_Credential" --ip "127.0.0.1" --port "9000"
+
+python3 Service_revoke.py --title "Loan_Credential" --rpc-endpoint "http://127.0.0.1:7547"

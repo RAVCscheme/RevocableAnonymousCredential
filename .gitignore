@@ -297,3 +297,5 @@ lib/
 lib64/
 .env
 pyvenv.cfg
+manifest.xml
+(dev).tmpl

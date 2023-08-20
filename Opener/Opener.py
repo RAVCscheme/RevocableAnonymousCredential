@@ -180,6 +180,8 @@ class Openers:
         self.registry[credential_id][issuing_session_id].setdefault("public-share", public_share) # it contains attributes in the order of schemaOrder
         self.registry[credential_id][issuing_session_id].setdefault("vcerts", vcerts)
         self.registry[credential_id][issuing_session_id].setdefault("combinations", combinations)
+        self.registry[credential_id][issuing_session_id].setdefault("kr", kr)
+
 
     def revoke_cred(self):
         (w3,params_contract, request_contract, issue_contract, _,acc_contract) = self.contracts
@@ -218,12 +220,14 @@ class Openers:
                 acm = []
                 for i in cm:
                     acm.append((FQ(i[0]), FQ(i[1])))
-                st = time.time()
-                tf = VerifyRevokeCred(kr,W,H,S,acm, delta, self.aggr_accum,self.aggr_vk)
-                et = time.time()
-                print("kr_verify_time", et-st)
-                print("tf")
-                print(tf)
+                
+                if(W[0] != 0 and W[1] != 0):
+                    st = time.time()
+                    tf = VerifyRevokeCred(kr,W,H,S,acm, delta, self.aggr_accum,self.aggr_vk)
+                    et = time.time()
+                    print("kr_verify_time", et-st)
+                    print("tf")
+                    print(tf)
                 # decrypt ai, bi, ci shares
                 hash = int.from_bytes(to_binary256(multiply(G1r, self.bsk)), "big", signed=False)
                 print("hash")
@@ -499,6 +503,9 @@ class Openers:
         credential_id = params_contract.functions.getMapCredentials(self.title).call()
         assert credential_id != 0, "No such AC."
         opening_filter = opening_contract.events.emitOpening.createFilter(fromBlock="0x0", toBlock='latest')
+        revok_status_2 = acc_contract.events.revocation_complete().createFilter(fromBlock="0x0", toBlock='latest')
+        revok_status = acc_contract.events.send_kr().createFilter(fromBlock="0x0", toBlock='latest')
+
         openersList = pickle.loads(self.r[19])
         #openersList = load_data(self.path +"/openersList.pickle")
         opener_dict = {}
@@ -531,6 +538,7 @@ class Openers:
             tx_hash = opening_contract.functions.SendOpeningInfo(args.title, opening_session_id, send_open_shares).transact({'from': args.address})
             # opener_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
             Reg = self.opening_event_filter(opening_filter, opener_dict, credential_id)
+            print("Reg = ", Reg)
             ret_shares = {}
             indexes = [] # opener-ids
             for opener_id in Reg:
@@ -541,33 +549,68 @@ class Openers:
             issuing_session_id = OpenCred(self.params, ret_shares, indexes, open_sigma, self.to, self.registry[credential_id], self.aggr_vk)
             et = time.time()
             print("Credential openeing", et-st)
-            if issuing_session_id == None:
-                print("No user matched")
-            else:
-                vcerts = self.registry[credential_id][issuing_session_id]["vcerts"]
-                combination = self.registry[credential_id][issuing_session_id]["combinations"]
-                print("Which CA Do you want to query ?")
-                for i in range(len(combination)):
-                    print("Enter "+str(i)+" for "+combination[i])
-                ca_index = int(input())
-                vcert = vcerts[ca_index]
-                #ca_ip, ca_port = self.getCAIpPort(combination[ca_index])
-                query = "SELECT * from certifiers WHERE title = {};".format("'" + combination[ca_index] + "'")
-                m = fetch_data_one(self.connection, query)[0]
-                ca_ip = m[5]
-                ca_port = m[6]
-                c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                c.connect((ca_ip, int(ca_port)))
-                vcertJSON = jsonpickle.encode(vcert)
-                c.send(vcertJSON.encode())
-                attributesJSON = c.recv(8192).decode()
-                attributes = jsonpickle.decode(attributesJSON)
-                if attributes is None:
-                    print("CA refused to disclose the user attributes") # Can configure to get the name of the CA.
-                else:
-                    print("The user is : ")
-                    print(attributes)
-                c.close()
+            print("kr = " + str(self.registry[credential_id][issuing_session_id]["kr"]))
+            kr = self.registry[credential_id][issuing_session_id]["kr"]
+
+            acc_contract.functions.combine_func_kr(kr,int(self.id)).transact({'from':args.address,'gas': 100000000})
+            asd = False
+            aggr_kr = None
+            while True:
+                logg = revok_status.get_new_entries()        
+                for i in range(len(logg)):
+                    asd = True
+                    # recieve s
+                    aggr_kr = int(logg[i]["args"]["kr"])
+                    print("aggr_kr")
+                    print(aggr_kr)
+                if asd:
+                    break
+            if(aggr_kr is not None):
+                name = self.title
+                a1 = (0,0)
+                H = (0,0)
+                S = (0,0)
+                comm = [(0,0)]
+                if(int(self.id) == 1):
+                    acc_contract.functions.verify_revocation_request(name, aggr_kr,a1, H, S, comm).transact({'from':args.address,'gas': 100000000})
+                asd = False
+                while True:
+                    logg = revok_status_2.get_new_entries()        
+                    for i in range(len(logg)):
+                        asd = True
+                        # recieve s
+                        bbb = int(logg[i]["args"]["c"])
+                        print("revocation complete")
+                        print(bbb)
+                    if asd:
+                        break
+            # if issuing_session_id == None:
+            #     print("No user matched")
+            # else:
+            #     vcerts = self.registry[credential_id][issuing_session_id]["vcerts"]
+            #     combination = self.registry[credential_id][issuing_session_id]["combinations"]
+            #     print("Which CA Do you want to query ?")
+            #     for i in range(len(combination)):
+            #         print("Enter "+str(i)+" for "+combination[i])
+            #     ca_index = int(input())
+            #     vcert = vcerts[ca_index]
+            #     #ca_ip, ca_port = self.getCAIpPort(combination[ca_index])
+            #     query = "SELECT * from certifiers WHERE title = {};".format("'" + combination[ca_index] + "'")
+            #     m = fetch_data_one(self.connection, query)[0]
+            #     ca_ip = m[5]
+            #     ca_port = m[6]
+            #     c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            #     c.connect((ca_ip, int(ca_port)))
+            #     vcertJSON = jsonpickle.encode(vcert)
+            #     c.send(vcertJSON.encode())
+            #     attributesJSON = c.recv(8192).decode()
+            #     attributes = jsonpickle.decode(attributesJSON)
+            #     if attributes is None:
+            #         print("CA refused to disclose the user attributes") # Can configure to get the name of the CA.
+            #     else:
+            #         print("The user is : ")
+            #         print(attributes)
+            #     c.close()
     
     def opening_event_filter(self,opening_filter, opener_dict, credential_id):
         Reg = {}
@@ -578,18 +621,21 @@ class Openers:
                 if _credential_id != credential_id:
                     continue
                 opening_session_id = opening_log[i]['args']['opening_session_id']
+                print("opening_sess_id")
+                
                 opener_address = opening_log[i]['args']['opener_address'] # deduce opener id from this.
                 opener_id = opener_dict[opener_address]
                 # indexes.add(opener_id)
                 openingshares = opening_log[i]['args']['openingshares']
+                print(openingshares)
                 Reg.setdefault(opener_id, {})
                 for j in range(len(openingshares)):
                     issuing_session_id = openingshares[j][0]
                     pairing_share = FQ12(openingshares[j][1:13])
                     Reg[opener_id].setdefault(issuing_session_id, pairing_share) # have to map here opener id to Reg.
-                if len(Reg.keys()) >= self.to:
+                if len(Reg.keys()) == self.no:
                     return Reg
-                time.sleep(15)
+                time.sleep(2)
     
     def getCAIpPort(self,title):
         RegisteredList = load_data(os.getcwd() + "/ROOT/ca_register.pickle")
