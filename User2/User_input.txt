@@ -1,9 +1,0 @@
-1
-Identity_Certificate
-fghjkl
-1998-05-12
-1
-Income_Certificate
-100000
-3
-1

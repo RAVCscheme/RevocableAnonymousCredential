@@ -210,6 +210,8 @@ class Validator:
         send_t = [blind_sig[1][0].n, blind_sig[1][1].n]
         # Upload the blind signature to Issue.sol by Validator_1
         tx_hash = i.functions.SendBlindSign(self.title, sender, send_h, send_t).transact({'from':self.address})
+        w3.eth.waitForTransactionReceipt(tx_hash)
+        print("send blind sign ", tx_hash.hex())
 
 parser = argparse.ArgumentParser(description="Anonymous Credential")
 parser.add_argument("--title", type=str, default = None, required = True, help= "This is the title of the Anonymous Credential.")

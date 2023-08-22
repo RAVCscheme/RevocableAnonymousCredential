@@ -93,3 +93,5 @@ print(ans1)
 print(ans2)
 print(ans3)
 print(ans4)
+
+array = bytearray()

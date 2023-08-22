@@ -15,7 +15,6 @@ from crypto import *
 import psycopg2
 from dotenv import load_dotenv
 
-#encoding_type_map = {"1": type("string"), "2": type(1), "3": type(datetime.datetime.now())}
 
 class Cred:
     def __init__(self,title, name, ip, port, dependency,rpc_endpoint, org_address, opener, validator):
@@ -237,6 +236,7 @@ class Cred:
         print(self.dependency)
         tx_hash = p.functions.set_params(self.title, encoded_hs, encoded_alpha, encoded_g1_beta, encoded_beta, encoded_opk_2,encoded_bpk, self.dependency, encoded_include_indexes, public_m_encoding).transact({'from': self.org_address})
         w3.eth.waitForTransactionReceipt(tx_hash)
+        print("type of trans", type(tx_hash))
         
         tx_hash = a.functions.set_accumulator(no,to,nv,tv).transact({'from': self.org_address})
         print(tx_hash)

@@ -319,7 +319,9 @@ class User:
         a1 = (W[0].n, W[1].n)
         H = (sig[0][0].n,sig[0][1].n)
         S = (sig[1][0].n,sig[1][1].n)
-        a.functions.verify_revocation_request(name, kr,a1, H, S, comm).transact({'from':self.block_address,'gas': 100000000})
+        tx_hash = a.functions.verify_revocation_request(name, kr,a1, H, S, comm).transact({'from':self.block_address,'gas': 100000000})
+        w3.eth.waitForTransactionReceipt(tx_hash)
+        print("ssending revoke req", tx_hash.hex())
         revok_status = a.events.revocation_complete().createFilter(fromBlock="0x0", toBlock='latest')
         asd = False
         while True:
@@ -611,6 +613,8 @@ class User:
         #only place where request smart contract is called from User
         st = time.time()
         tx_hash = r.functions.RequestCred(title, send_vcerts, send_cm, send_compressed_cipher, send_hp, send_hr, send_bo, pi_s, pi_o, send_compressed_G2Points, str_public_m).transact({'from':self.block_address})
+        w3.eth.waitForTransactionReceipt(tx_hash)
+        print("ReqCred ", tx_hash.hex())
         et = time.time()
         print("Time for Verification at Smart Contract is:",et-st)
         nv = p[9][0]
@@ -618,6 +622,8 @@ class User:
         signs = [None] * nv
         self.ReceivePartialCredentials(title,params, signs, oss, p)
         tx_hash = i.functions.get_kr_W(title).transact({'from':self.block_address})
+        w3.eth.waitForTransactionReceipt(tx_hash)
+        print("get kr ", tx_hash.hex())
         acc_filter = a.events.send_W_kr.createFilter(fromBlock="0x0", toBlock='latest')
         asd = False
         kr = None

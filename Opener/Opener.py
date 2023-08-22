@@ -7,7 +7,7 @@ import json
 import pickle
 import threading
 from utils import *
-
+import hexbytes
 from crypto import *
 
 class Openers:
@@ -263,6 +263,7 @@ class Openers:
                     if flag:
                         tx_hash = acc_contract.functions.combine_di_and_ei(di,ei,int(self.id)).transact({'from': self.address, 'gas': 100000000})
                         w3.eth.waitForTransactionReceipt(tx_hash)
+                        print("combine di ", tx_hash.hex())
                         flag = False
                     
                 print("d")
@@ -289,6 +290,8 @@ class Openers:
                     if flag:
                         tx_hash = acc_contract.functions.combine_func_si(si,int(self.id)).transact({'from': self.address, 'gas': 100000000})
                         w3.eth.waitForTransactionReceipt(tx_hash)
+                        #w3.eth.waitForTransactionReceipt(tx_hash)
+                        print("combine si ", tx_hash.hex())
                         flag = False
                 print("s")
                 print(s)
@@ -305,6 +308,8 @@ class Openers:
                 st = time.time()
                 tx_hash = acc_contract.functions.recieve_share_for_revocation(int(self.id),pi,self.cred_pr_id).transact({'from': self.address, 'gas': 100000000})
                 w3.eth.waitForTransactionReceipt(tx_hash)
+                #w3.eth.waitForTransactionReceipt(tx_hash)
+                print("combine share  ", tx_hash.hex())
                 et = time.time()
                 delta = acc_contract.functions.get_delta().call()
                 print(delta)
@@ -380,6 +385,8 @@ class Openers:
                         a1 = (self.accum_sk + kr) % curve_order
                         tx_hash = acc_contract.functions.recieve_ya_share(int(self.id),a1,s).transact({'from': self.address, 'gas': 100000000})
                         w3.eth.waitForTransactionReceipt(tx_hash)
+                        #w3.eth.waitForTransactionReceipt(tx_hash)
+                        print("share kr ", tx_hash.hex())
                         # delta = acc_contract.functions.get_delta().call()
                         # print("delta after")
                         # print(delta)
@@ -536,6 +543,8 @@ class Openers:
                 send_open_shares.append(pairing_values)
         
             tx_hash = opening_contract.functions.SendOpeningInfo(args.title, opening_session_id, send_open_shares).transact({'from': args.address})
+            w3.eth.waitForTransactionReceipt(tx_hash)
+            print("sending info hash  ", tx_hash.hex())
             # opener_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
             Reg = self.opening_event_filter(opening_filter, opener_dict, credential_id)
             print("Reg = ", Reg)
@@ -552,7 +561,9 @@ class Openers:
             print("kr = " + str(self.registry[credential_id][issuing_session_id]["kr"]))
             kr = self.registry[credential_id][issuing_session_id]["kr"]
 
-            acc_contract.functions.combine_func_kr(kr,int(self.id)).transact({'from':args.address,'gas': 100000000})
+            tx_hash = acc_contract.functions.combine_func_kr(kr,int(self.id)).transact({'from':args.address,'gas': 100000000})
+            w3.eth.waitForTransactionReceipt(tx_hash)
+            print("combine kr ", tx_hash.hex())
             asd = False
             aggr_kr = None
             while True:
@@ -572,7 +583,9 @@ class Openers:
                 S = (0,0)
                 comm = [(0,0)]
                 if(int(self.id) == 1):
-                    acc_contract.functions.verify_revocation_request(name, aggr_kr,a1, H, S, comm).transact({'from':args.address,'gas': 100000000})
+                    tx_hash = acc_contract.functions.verify_revocation_request(name, aggr_kr,a1, H, S, comm).transact({'from':args.address,'gas': 100000000})
+                    w3.eth.waitForTransactionReceipt(tx_hash)
+                    print("verify_revok ", tx_hash.hex())
                 asd = False
                 while True:
                     logg = revok_status_2.get_new_entries()        
@@ -584,33 +597,6 @@ class Openers:
                         print(bbb)
                     if asd:
                         break
-            # if issuing_session_id == None:
-            #     print("No user matched")
-            # else:
-            #     vcerts = self.registry[credential_id][issuing_session_id]["vcerts"]
-            #     combination = self.registry[credential_id][issuing_session_id]["combinations"]
-            #     print("Which CA Do you want to query ?")
-            #     for i in range(len(combination)):
-            #         print("Enter "+str(i)+" for "+combination[i])
-            #     ca_index = int(input())
-            #     vcert = vcerts[ca_index]
-            #     #ca_ip, ca_port = self.getCAIpPort(combination[ca_index])
-            #     query = "SELECT * from certifiers WHERE title = {};".format("'" + combination[ca_index] + "'")
-            #     m = fetch_data_one(self.connection, query)[0]
-            #     ca_ip = m[5]
-            #     ca_port = m[6]
-            #     c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            #     c.connect((ca_ip, int(ca_port)))
-            #     vcertJSON = jsonpickle.encode(vcert)
-            #     c.send(vcertJSON.encode())
-            #     attributesJSON = c.recv(8192).decode()
-            #     attributes = jsonpickle.decode(attributesJSON)
-            #     if attributes is None:
-            #         print("CA refused to disclose the user attributes") # Can configure to get the name of the CA.
-            #     else:
-            #         print("The user is : ")
-            #         print(attributes)
-            #     c.close()
     
     def opening_event_filter(self,opening_filter, opener_dict, credential_id):
         Reg = {}

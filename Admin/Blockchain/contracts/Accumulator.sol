@@ -73,59 +73,6 @@ contract Accumulator{
             return l;
 
     }
-    // function genAggregatedYa() public view returns(G.G1Point memory){
-    //         uint256 [] memory indexes = new uint[](to);
-    //         uint256[2][] memory filter = new uint[2][](to);
-    //         uint u = 0;
-    //         for (uint i=1; i<=no; i++) 
-    //         {
-    //             if(accumulator_key_shares[i] != 0){
-    //                 indexes[u] = i;
-    //                 filter[u] = accumulator_key_shares[i];
-    //                 u++;
-    //             }
-    //         }
-    //         uint256[] memory l = lagrange_basis(indexes);
-    //         uint256 aggr_ka = 0;
-    //         // aggr_ka.X = filter[0][0];
-    //         // aggr_ka.Y = filter[0][1];
-    //         // aggr_ka = G.g1mul(aggr_ka, l[0]);
-    //         for (uint i=0; i<indexes.length; i++){
-    //             // G.G1Point memory tmp;
-    //             // tmp.X = filter[i][0];
-    //             // tmp.Y = filter[i][1];
-    //             //aggr_ka = G.g1add(aggr_ka ,(G.g1mul(tmp, l[i])));
-    //             aggr_ka = aggr_ka + mulmod(l[i], accumulator_key_shares[indexes[i]-1],G.GEN_ORDER)
-    //         }
-    //         return aggr_ka;
-    // }
-
-    // function genAggregatedYa_2() public view returns(G.G1Point memory){
-    //         uint256 [] memory indexes = new uint[](to);
-    //         uint256[2][] memory filter = new uint[2][](to);
-    //         uint u = 0;
-    //         for (uint i=1; i<=no; i++) 
-    //         {
-    //             if(delta_shares[i]!= 0){
-    //                 indexes[u] = i;
-    //                 filter[u] = delta_shares[i];
-    //                 u++;
-    //             }
-    //         }
-    //         uint256[] memory l = lagrange_basis(indexes);
-    //         uint256 aggr_ka;
-    //         // aggr_ka.X = filter[0][0];
-    //         // aggr_ka.Y = filter[0][1];
-    //         // aggr_ka = G.g1mul(aggr_ka, l[0]);
-    //         for (uint i=1; i<indexes.length; i++){
-    //             // G.G1Point memory tmp;
-    //             // tmp.X = filter[i][0];
-    //             // tmp.Y = filter[i][1];
-    //             // aggr_ka = G.g1add(aggr_ka ,(G.g1mul(tmp, l[i])));
-    //             aggr_ka = aggr_ka + mulmod(l[i], delta_shares[indexes[i]-1],G.GEN_ORDER)
-    //         }
-    //         return aggr_ka;
-    // }
 
     function updateDelta(uint256 ya, uint256 kr) public {
             delta = G.g1mul(delta, G._modInv(addmod(kr,ya,G.GEN_ORDER),G.GEN_ORDER));
